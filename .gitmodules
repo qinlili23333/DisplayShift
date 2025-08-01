@@ -1,0 +1,3 @@
+[submodule "DisplayConfig"]
+	path = DisplayConfig
+	url = https://github.com/qinlili23333/DisplayConfig.git
