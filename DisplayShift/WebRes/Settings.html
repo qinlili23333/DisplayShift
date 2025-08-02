@@ -10,8 +10,8 @@
             display: flex;
             width: 100%;
             flex-direction: column;
-            padding-bottom: 16px;
         }
+
 
         #buttons {
             position: fixed;
@@ -196,10 +196,43 @@
                 transform: translateY(0);
             }
         }
+        .latency-container {
+            display: flex;
+            flex-direction: row;
+            padding-bottom: 16px;
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .latency-label {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .latency-input {
+            width: 22%;
+            padding: 6px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+            .latency-input:focus {
+                border-color: #0078D4;
+                box-shadow: 0 2px 8px rgba(0, 120, 212, 0.2);
+                outline: none;
+            }
     </style>
 </head>
 <body style='margin:8px;padding:0px;overflow:hidden;'>
     <div id='content'></div>
+    <div class="latency-container" id="latency-container">
+        <label for="latencyInput" class="latency-label">Delay Latency (second)</label>
+        <input id="latencyInput" class="latency-input" type="number" value="5" />
+    </div>
     <div id="buttons">
         <button id="saveBtn" type="button">Save</button>
         <button id="cancelBtn" type="button">Cancel</button>
@@ -216,11 +249,11 @@
         window.Bridge = chrome.webview.hostObjects.Bridge;
 
         // Helper to call ChangeWindowHeight if content height changes
-        let lastHeight = 0;
         function updateWindowHeight() {
             const content = document.getElementById('content');
             const buttons = document.getElementById('buttons');
-            window.Bridge.ChangeWindowHeight(content.clientHeight + buttons.clientHeight + 16);
+            const latencyInput = document.getElementById('latency-container');
+            window.Bridge.ChangeWindowHeight(content.clientHeight + buttons.clientHeight + latencyInput.clientHeight + 16);
         }
 
         // Observe content changes
@@ -229,14 +262,21 @@
 
         // Windows 11 style messagebox logic
         function showMessageBox(message, title = "Validation") {
-            document.getElementById('messagebox-title').textContent = title;
-            document.getElementById('messagebox-message').textContent = message;
-            document.getElementById('messagebox-overlay').style.display = "flex";
+            return new Promise((resolve) => {
+                document.getElementById('messagebox-title').textContent = title;
+                document.getElementById('messagebox-message').textContent = message;
+                document.getElementById('messagebox-overlay').style.display = "flex";
+
+                const okButton = document.getElementById('messagebox-ok');
+                const onClose = () => {
+                    document.getElementById('messagebox-overlay').style.display = "none";
+                    okButton.removeEventListener('click', onClose);
+                    resolve(); // Resolve the promise when the message box is closed
+                };
+
+                okButton.addEventListener('click', onClose);
+            });
         }
-        function hideMessageBox() {
-            document.getElementById('messagebox-overlay').style.display = "none";
-        }
-        document.getElementById('messagebox-ok').addEventListener('click', hideMessageBox);
 
         document.getElementById('saveBtn').addEventListener('click', async () => {
             let config = [];
@@ -250,13 +290,17 @@
                 if (checkB) bSelected = true;
                 config.push({ DevicePath: devicePath, A: checkA, B: checkB });
             });
+
             if (!aSelected || !bSelected) {
-                showMessageBox("Please select at least one display for both group A and group B.");
+                await showMessageBox("Please select at least one display for both group A and group B.");
                 return;
             }
-            await Bridge.WriteConfig(JSON.stringify(config));
+
+            await Bridge.WriteConfig(JSON.stringify({ Configs: config, Latency: document.getElementById("latencyInput").value, CurrentConfig: "B" }));
+            await showMessageBox("Config saved. Group A will active then.", "Saved");
             Bridge.CloseWindow();
         });
+
         document.getElementById('cancelBtn').addEventListener('click', () => {
             Bridge.CloseWindow();
         });
@@ -290,11 +334,11 @@
             });
             updateWindowHeight();
             let config = JSON.parse(await Bridge.ReadConfig());
-            if (config.length == 0) {
+            if (config.Configs.length == 0) {
                 document.getElementsByClassName("checkA")[0].checked = true;
                 document.getElementsByClassName("checkB")[0].checked = true;
             } else {
-                config.forEach(item => {
+                config.Configs.forEach(item => {
                     let displayRow = document.querySelector(`.switch-group[devicepath="${item.DevicePath.replaceAll("\\", "\\\\")}"]`);
                     if (displayRow) {
                         let checkA = displayRow.querySelector('.checkA');
@@ -304,7 +348,8 @@
                     }
                 });
             }
-        })()
+            document.getElementById("latencyInput").value = config.Latency || 5;
+        })();
     </script>
 </body>
 </html>

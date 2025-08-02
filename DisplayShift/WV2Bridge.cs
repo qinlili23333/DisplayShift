@@ -1,8 +1,9 @@
 ﻿
+using MartinGC94.DisplayConfig.API;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Windows;
-using MartinGC94.DisplayConfig.API;
 
 namespace DisplayShift
 {
@@ -42,7 +43,7 @@ namespace DisplayShift
             }
             else
             {
-                return "[]";
+                return JsonSerializer.Serialize(new ConfigScheme());
             }
         }
 
