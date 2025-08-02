@@ -7,7 +7,7 @@ namespace DisplayShift
     public class WV2Bridge
     {
         public uint[] DisplayId { get; set; }
-        public int GetAllConnectedDisplays()
+        public DisplayInfo[] GetAllConnectedDisplays()
         {
             List<DisplayInfo> Displays = new();
             var config = DisplayConfig.GetConfig();
@@ -18,7 +18,7 @@ namespace DisplayShift
                     Displays.Add(DisplayInfo.GetDisplayInfo(config, index));
                 }
             }
-            return Displays.Count;
+            return [.. Displays];
         }
     }
 }
