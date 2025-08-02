@@ -1,0 +1,25 @@
+﻿<Window x:Class="DisplayShift.Window1"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DisplayShift"
+        mc:Ignorable="d"
+        ResizeMode="CanMinimize"
+        Title="Switching Display..." SizeToContent="WidthAndHeight">
+    <Grid Height="80" Width="600">
+        <ProgressBar HorizontalAlignment="Center" Height="30" Margin="0,10,0,0" VerticalAlignment="Top" Width="580"/>
+        <Label Content="Switch in ..." HorizontalAlignment="Left" Margin="10,45,0,0" VerticalAlignment="Top" Width="290" FontSize="16"/>
+        <Button Content="Settings" Margin="305,45,0,0" VerticalAlignment="Top" Width="80"/>
+        <Button Content="Calcel" Margin="390,45,0,0" VerticalAlignment="Top" Width="80"/>
+        <Button Content="Skip Wait" Margin="475,45,0,0" VerticalAlignment="Top" Width="80"/>
+
+    </Grid>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+</Window>
