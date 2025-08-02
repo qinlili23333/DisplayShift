@@ -4,12 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DisplayShift"
-        xmlns:Wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" x:Class="DisplayShift.MainWindow"
+        xmlns:Wpf="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf" x:Class="DisplayShift.Settings"
         mc:Ignorable="d"
         ResizeMode="CanMinimize"
         Title="DisplayShift Settings" SizeToContent="WidthAndHeight" Loaded="Window_Loaded">
-    <Grid MinWidth="500" MinHeight="400">
-        <Wpf:WebView2 x:Name="WebView" Margin="2,2,2,2" DefaultBackgroundColor="Transparent"/>
+    <Grid x:Name="MainGrid" Width="400" MinHeight="250">
+        <Wpf:WebView2 x:Name="WebView" Margin="0,0,0,0" DefaultBackgroundColor="Transparent"/>
     </Grid>
     <Window.Resources>
         <ResourceDictionary>

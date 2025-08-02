@@ -9,7 +9,7 @@ namespace DisplayShift
     {
         public void InitializeComponent()
         {
-            if (!File.Exists("Settings.json"))
+            if (true||!File.Exists("Settings.json"))
             {
                 this.StartupUri = new System.Uri("Settings.xaml", System.UriKind.Relative);
             }

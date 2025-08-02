@@ -7,11 +7,11 @@ namespace DisplayShift
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class Settings : Window
     {
         CoreWebView2Environment WebView2Environment;
 
-        public MainWindow()
+        public Settings()
         {
             InitializeComponent();
         }
@@ -35,7 +35,7 @@ namespace DisplayShift
             WebView.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
             WebView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
 #endif
-            WebView.CoreWebView2.AddHostObjectToScript("Bridge", new WV2Bridge());
+            WebView.CoreWebView2.AddHostObjectToScript("Bridge", new WV2Bridge(this));
             WebView.CoreWebView2.NavigateToString(WebRes.Settings);
         }
 

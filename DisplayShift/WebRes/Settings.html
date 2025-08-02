@@ -6,6 +6,13 @@
             box-sizing: border-box;
         }
 
+        #content {
+            display: flex;
+            width: 100%;
+            flex-direction: column;
+            padding-bottom: 16px;
+        }
+
         #buttons {
             position: fixed;
             bottom: 16px;
@@ -52,20 +59,251 @@
             button#saveBtn:active {
                 background: #004578;
             }
+
+        .displayRow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+
+        .displayName {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .switch-group {
+            display: flex;
+            gap: 16px;
+        }
+
+        /* Square switch style */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+        }
+
+            .switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+
+        .switch-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+        }
+
+        .slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 32px;
+            height: 32px;
+            background: #E5E5E5;
+            border-radius: 8px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 15px;
+            color: #222;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+            user-select: none;
+        }
+
+        .switch input:checked + .slider {
+            background: #0078D4;
+            color: #fff;
+        }
+
+        /* Hide the text label outside the switch */
+        .switch-label .switch-text {
+            display: none;
+        }
+
+        /* Windows 11 style messagebox */
+        #messagebox-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.12);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #messagebox {
+            min-width: 320px;
+            max-width: 90vw;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            padding: 32px 24px 16px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 16px;
+            color: #222;
+            animation: fadeIn 0.2s;
+        }
+
+        #messagebox-title {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        #messagebox-message {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        #messagebox-ok {
+            min-width: 80px;
+            padding: 8px 16px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background: #0078D4;
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            transition: background 0.2s;
+        }
+
+            #messagebox-ok:hover {
+                background: #005A9E;
+            }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body style='margin:8px;padding:0px;overflow:hidden;'>
-    <div id='content' style='width:100%;height:100%;'>
-
-    </div>
+    <div id='content'></div>
     <div id="buttons">
         <button id="saveBtn" type="button">Save</button>
         <button id="cancelBtn" type="button">Cancel</button>
     </div>
+    <!-- Windows 11 style messagebox -->
+    <div id="messagebox-overlay">
+        <div id="messagebox">
+            <div id="messagebox-title">Validation</div>
+            <div id="messagebox-message"></div>
+            <button id="messagebox-ok" type="button">OK</button>
+        </div>
+    </div>
     <script>
         window.Bridge = chrome.webview.hostObjects.Bridge;
+
+        // Helper to call ChangeWindowHeight if content height changes
+        let lastHeight = 0;
+        function updateWindowHeight() {
+            const content = document.getElementById('content');
+            const buttons = document.getElementById('buttons');
+            window.Bridge.ChangeWindowHeight(content.clientHeight + buttons.clientHeight + 16);
+        }
+
+        // Observe content changes
+        const observer = new MutationObserver(updateWindowHeight);
+        observer.observe(document.getElementById('content'), { childList: true, subtree: true });
+
+        // Windows 11 style messagebox logic
+        function showMessageBox(message, title = "Validation") {
+            document.getElementById('messagebox-title').textContent = title;
+            document.getElementById('messagebox-message').textContent = message;
+            document.getElementById('messagebox-overlay').style.display = "flex";
+        }
+        function hideMessageBox() {
+            document.getElementById('messagebox-overlay').style.display = "none";
+        }
+        document.getElementById('messagebox-ok').addEventListener('click', hideMessageBox);
+
+        document.getElementById('saveBtn').addEventListener('click', async () => {
+            let config = [];
+            let aSelected = false;
+            let bSelected = false;
+            document.querySelectorAll('.switch-group').forEach(group => {
+                let devicePath = group.getAttribute('devicepath');
+                let checkA = group.querySelector('.checkA').checked;
+                let checkB = group.querySelector('.checkB').checked;
+                if (checkA) aSelected = true;
+                if (checkB) bSelected = true;
+                config.push({ DevicePath: devicePath, A: checkA, B: checkB });
+            });
+            if (!aSelected || !bSelected) {
+                showMessageBox("Please select at least one display for both group A and group B.");
+                return;
+            }
+            await Bridge.WriteConfig(JSON.stringify(config));
+            Bridge.CloseWindow();
+        });
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            Bridge.CloseWindow();
+        });
+
         (async () => {
             let displays = await Bridge.GetAllConnectedDisplays();
+            let content = document.getElementById('content');
+            displays.forEach(async display => {
+                let displayName = await display.DisplayName;
+                let devicePath = await display.DevicePath;
+                let displayRow = document.createElement('div');
+                displayRow.className = "displayRow";
+                displayRow.innerHTML = `
+                        <span class="displayName">${displayName}</span>
+                        <div class="switch-group" devicepath="${devicePath}">
+                            <label class="switch-label">
+                                <span class="switch">
+                                    <input type="checkbox" class="checkA">
+                                    <span class="slider">A</span>
+                                </span>
+                            </label>
+                            <label class="switch-label">
+                                <span class="switch">
+                                    <input type="checkbox" class="checkB">
+                                    <span class="slider">B</span>
+                                </span>
+                            </label>
+                        </div>
+                    `;
+                content.appendChild(displayRow);
+            });
+            updateWindowHeight();
+            let config = JSON.parse(await Bridge.ReadConfig());
+            if (config.length == 0) {
+                document.getElementsByClassName("checkA")[0].checked = true;
+                document.getElementsByClassName("checkB")[0].checked = true;
+            } else {
+                config.forEach(item => {
+                    let displayRow = document.querySelector(`.switch-group[devicepath="${item.DevicePath.replaceAll("\\", "\\\\")}"]`);
+                    if (displayRow) {
+                        let checkA = displayRow.querySelector('.checkA');
+                        let checkB = displayRow.querySelector('.checkB');
+                        checkA.checked = item.A;
+                        checkB.checked = item.B;
+                    }
+                });
+            }
         })()
     </script>
 </body>
