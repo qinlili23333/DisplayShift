@@ -55,5 +55,9 @@ namespace DisplayShift
             CurrentWindow.Close();
         }
 
+        public void Apply()
+        {
+            new Switch().Show(); 
+        }
     }
 }

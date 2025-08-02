@@ -298,6 +298,7 @@
 
             await Bridge.WriteConfig(JSON.stringify({ Configs: config, Latency: parseInt(document.getElementById("latencyInput").value), CurrentConfig: "B" }));
             await showMessageBox("Config saved. Group A will active then.", "Saved");
+            Bridge.Apply();
             Bridge.CloseWindow();
         });
 

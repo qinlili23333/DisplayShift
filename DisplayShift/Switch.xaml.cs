@@ -12,7 +12,11 @@ namespace DisplayShift
     public partial class Switch : Window
     {
         ConfigScheme Conf;
+
+        List<DisplayInfo> Displays = new();
+
         bool GroupA = true;
+
         public Switch()
         {
             InitializeComponent();
@@ -34,7 +38,6 @@ namespace DisplayShift
                 GroupA = true;
                 Conf.CurrentConfig = "A";
             }
-            List<DisplayInfo> Displays = new();
             var config = DisplayConfig.GetConfig();
             foreach (int index in config.AvailablePathIndexes)
             {
@@ -42,6 +45,14 @@ namespace DisplayShift
             }
             foreach (var display in Conf.Configs)
             {
+                var info = Displays.Find(d => d.DevicePath == display.DevicePath);
+                if (info == null)
+                {
+                    MessageBox.Show($"Display with path {display.DevicePath} not found in the current configuration. Please check your settings.", "Display Not Found", MessageBoxButton.OK, MessageBoxImage.Error);
+                    new Settings().Show();
+                    Close();
+                    return;
+                }
             }
             int Count = Conf.Latency;
             while (Count > 0)
@@ -70,6 +81,21 @@ namespace DisplayShift
 
         private void Apply()
         {
+            uint[] DisplayId = [];
+            uint[] DisplayIdToDisable = [];
+            foreach (var display in Conf.Configs)
+            {
+                var info = Displays.Find(d => d.DevicePath == display.DevicePath);
+                if((GroupA && display.A) || (!GroupA && display.B))
+                {
+                    DisplayId = DisplayId.Append(info.DisplayId).ToArray();
+                }
+                else
+                {
+                    DisplayIdToDisable = DisplayIdToDisable.Append(info.DisplayId).ToArray();
+                }
+            }
+            MartinGC94.DisplayConfig.API.DisplayConfig.EnableDisableDisplay(null, DisplayId, DisplayIdToDisable);
             File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings.json"), JsonSerializer.Serialize(Conf));
             Close();
         }
