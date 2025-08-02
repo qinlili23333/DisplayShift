@@ -14,17 +14,14 @@ namespace DisplayShift
         {
             CurrentWindow = window;
         }
-        public uint[] DisplayId { get; set; }
+
         public DisplayInfo[] GetAllConnectedDisplays()
         {
             List<DisplayInfo> Displays = new();
             var config = DisplayConfig.GetConfig();
-            if (DisplayId is null)
+            foreach (int index in config.AvailablePathIndexes)
             {
-                foreach (int index in config.AvailablePathIndexes)
-                {
-                    Displays.Add(DisplayInfo.GetDisplayInfo(config, index));
-                }
+                Displays.Add(DisplayInfo.GetDisplayInfo(config, index));
             }
             return [.. Displays];
         }
