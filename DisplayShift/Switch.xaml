@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:DisplayShift"
         mc:Ignorable="d"
         ResizeMode="CanMinimize"
-        Title="Switching Display..." SizeToContent="WidthAndHeight">
+        Title="Switching Display..." SizeToContent="WidthAndHeight" Closing="Window_Closing">
     <Grid Height="80" Width="600">
         <ProgressBar x:Name="DelayBar" HorizontalAlignment="Center" Height="30" Margin="0,10,0,0" VerticalAlignment="Top" Width="580"/>
         <Label x:Name="Status" Content="Switch in ..." HorizontalAlignment="Left" Margin="10,45,0,0" VerticalAlignment="Top" Width="290" FontSize="16"/>

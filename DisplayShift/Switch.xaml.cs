@@ -15,6 +15,8 @@ namespace DisplayShift
 
         List<DisplayInfo> Displays = new();
 
+        bool IsClosed = false;
+
         bool GroupA = true;
 
         public Switch()
@@ -81,6 +83,10 @@ namespace DisplayShift
 
         private void Apply()
         {
+            if(IsClosed)
+            {
+                return;
+            }
             uint[] DisplayId = [];
             uint[] DisplayIdToDisable = [];
             foreach (var display in Conf.Configs)
@@ -98,6 +104,11 @@ namespace DisplayShift
             MartinGC94.DisplayConfig.API.DisplayConfig.EnableDisableDisplay(null, DisplayId, DisplayIdToDisable);
             File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings.json"), JsonSerializer.Serialize(Conf));
             Close();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            IsClosed = true;
         }
     }
 }
